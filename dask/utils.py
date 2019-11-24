@@ -15,6 +15,7 @@ from threading import Lock
 import uuid
 from weakref import WeakValueDictionary
 from functools import lru_cache
+from timeit import default_timer
 
 from .core import get_deps
 from .optimization import key_split  # noqa: F401
@@ -1369,3 +1370,9 @@ def ndimlist(seq):
         return 1
     else:
         return 1 + ndimlist(seq[0])
+
+def get_wall_time(callable):
+    start_time = default_timer()
+    result = callable()
+    end_time = default_timer()
+    return end_time - start_time, result
