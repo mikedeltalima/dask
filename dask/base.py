@@ -19,7 +19,7 @@ from .compatibility import is_dataclass, dataclass_fields
 from .context import thread_state
 from .core import flatten, quote, get as simple_get, literal
 from .hashing import hash_buffer_hex
-from .utils import Dispatch, ensure_dict, apply
+from .utils import Dispatch, ensure_dict, apply, get_wall_time
 from . import config, local, threaded
 
 
