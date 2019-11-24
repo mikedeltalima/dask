@@ -4,6 +4,7 @@ pytest.importorskip("numpy")
 
 import numpy as np
 import pytest
+import warnings
 from toolz import concat
 
 import dask
@@ -60,6 +61,24 @@ def test_arr_like(funcname, shape, cast_shape, dtype, cast_chunks, chunks):
     if "empty" not in funcname:
         assert (np_r == np.asarray(da_r)).all()
 
+@pytest.mark.parametrize("x, y, z", [(int(1e5), 25, 25)])
+def test_arr_hashing(x, y, z):
+    # 3d numpy array
+    arr1 = np.random.rand(x, y, z)
+
+    # assign using broadcasting and list to force a 1d array of 2d arrays
+    arr2 = np.full(x, None)
+    arr2[:] = list(np.random.rand(x, y, z))
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        arr_da = da.from_array(arr1, chunks=(x // 100, -1, -1))
+        assert len(w) == 0
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        arr_da = da.from_array(arr2, chunks=(x // 100,))
+        assert len(w) == 1
 
 @pytest.mark.parametrize("endpoint", [True, False])
 def test_linspace(endpoint):

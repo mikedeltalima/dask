@@ -9,6 +9,7 @@ import os
 import threading
 import uuid
 from distutils.version import LooseVersion
+import warnings
 
 from toolz import merge, groupby, curry, identity
 from toolz.functoolz import Compose
@@ -17,7 +18,7 @@ from .compatibility import is_dataclass, dataclass_fields
 from .context import thread_state
 from .core import flatten, quote, get as simple_get, literal
 from .hashing import hash_buffer_hex
-from .utils import Dispatch, ensure_dict, apply
+from .utils import Dispatch, ensure_dict, apply, get_wall_time
 from . import config, local, threaded
 
 
@@ -655,7 +656,10 @@ def tokenize(*args, **kwargs):
     """
     if kwargs:
         args = args + (kwargs,)
-    return md5(str(tuple(map(normalize_token, args))).encode()).hexdigest()
+    time_taken, result = get_wall_time(lambda: tuple(map(normalize_token, args)))
+    if time_taken > 2: # seconds
+        warnings.warn("tokenize is slow: set name=False to avoid hashing")
+    return md5(str(result).encode()).hexdigest()
 
 
 normalize_token = Dispatch()
