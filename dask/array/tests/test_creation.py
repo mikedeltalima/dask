@@ -61,19 +61,13 @@ def test_arr_like(funcname, shape, cast_shape, dtype, cast_chunks, chunks):
         assert (np_r == np.asarray(da_r)).all()
 
 
-@pytest.mark.parametrize("x, y, z", [(int(1e5), 25, 25)])
+@pytest.mark.parametrize("x, y, z", [(100, 25, 25)])
 def test_arr_hashing(x, y, z):
     # 3d numpy array
-    arr1 = np.random.rand(x, y, z)
-
-    # assign using broadcasting and list to force a 1d array of 2d arrays
-    arr2 = np.full(x, None)
-    arr2[:] = list(np.random.rand(x, y, z))
-
-    da.from_array(arr1, chunks=(x // 100, -1, -1))
-
-    with pytest.warns(RuntimeWarning):
-        da.from_array(arr2, chunks=(x // 100,))
+    arr = np.random.rand(x, y, z)
+    with dask.config.set({"tokenize.warn_time_secs": 1e-5}):
+        with pytest.warns(RuntimeWarning):
+            da.from_array(arr, chunks=(x // 100, -1, -1))
 
 
 @pytest.mark.parametrize("endpoint", [True, False])

@@ -663,9 +663,9 @@ def tokenize(*args, **kwargs):
     warn_config_key = "tokenize.warn_time_secs"
     warn_time_default = 2
     warn_time = config.get(warn_config_key, default=warn_time_default)
-    if time_taken > warn_time:
+    if time_taken > float(warn_time):
         warnings.warn(
-            "tokenize ran for {0:.2f} seconds."
+            "tokenize ran for {0:n} seconds."
             " Configuration key {1} controls this threshold"
             " and was set to {2} (default={3}).".format(
                 time_taken, warn_config_key, warn_time, warn_time_default
