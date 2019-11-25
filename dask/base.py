@@ -3,6 +3,7 @@ from collections.abc import Mapping, Iterator
 from functools import partial
 from hashlib import md5
 from operator import getitem
+from timeit import default_timer
 import inspect
 import pickle
 import os
@@ -18,7 +19,7 @@ from .compatibility import is_dataclass, dataclass_fields
 from .context import thread_state
 from .core import flatten, quote, get as simple_get, literal
 from .hashing import hash_buffer_hex
-from .utils import Dispatch, ensure_dict, apply, get_wall_time
+from .utils import Dispatch, ensure_dict, apply
 from . import config, local, threaded
 
 
@@ -656,10 +657,12 @@ def tokenize(*args, **kwargs):
     """
     if kwargs:
         args = args + (kwargs,)
-    time_taken, result = get_wall_time(lambda: tuple(map(normalize_token, args)))
+    start_time = default_timer()
+    result = md5(str(tuple(map(normalize_token, args))).encode()).hexdigest()
+    time_taken = default_timer() - start_time
     if time_taken > 2: # seconds
         warnings.warn("tokenize is slow: set name=False to avoid hashing")
-    return md5(str(result).encode()).hexdigest()
+    return result
 
 
 normalize_token = Dispatch()
