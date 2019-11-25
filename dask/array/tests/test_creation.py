@@ -70,15 +70,10 @@ def test_arr_hashing(x, y, z):
     arr2 = np.full(x, None)
     arr2[:] = list(np.random.rand(x, y, z))
 
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always")
-        arr_da = da.from_array(arr1, chunks=(x // 100, -1, -1))
-        assert len(w) == 0
+    arr_da = da.from_array(arr1, chunks=(x // 100, -1, -1))
 
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always")
+    with pytest.warns(RuntimeWarning):
         arr_da = da.from_array(arr2, chunks=(x // 100,))
-        assert len(w) == 1
 
 @pytest.mark.parametrize("endpoint", [True, False])
 def test_linspace(endpoint):

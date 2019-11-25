@@ -661,7 +661,7 @@ def tokenize(*args, **kwargs):
     result = md5(str(tuple(map(normalize_token, args))).encode()).hexdigest()
     time_taken = default_timer() - start_time
     if time_taken > 2: # seconds
-        warnings.warn("tokenize is slow: set name=False to avoid hashing")
+        warnings.warn("tokenize is slow: set name=False to avoid hashing", RuntimeWarning)
     return result
 
 
