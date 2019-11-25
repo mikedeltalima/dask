@@ -2,7 +2,6 @@ import datetime
 import functools
 import operator
 import pickle
-import time
 
 import numpy as np
 import pytest
@@ -29,7 +28,6 @@ from dask.utils import (
     parse_timedelta,
     parse_bytes,
     is_arraylike,
-    get_wall_time,
 )
 from dask.utils_test import inc
 from dask.highlevelgraph import HighLevelGraph
@@ -567,8 +565,3 @@ def test_is_arraylike():
     assert is_arraylike(np.empty(())) is True
     assert is_arraylike(np.empty((0,))) is True
     assert is_arraylike(np.empty((0, 0))) is True
-
-def test_get_wall_time():
-    sleep_time_s = 0.01
-    time_taken, _result = get_wall_time(lambda: time.sleep(sleep_time_s))
-    assert pytest.approx(time_taken, sleep_time_s, abs=sleep_time_s / 2)

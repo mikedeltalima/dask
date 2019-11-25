@@ -1370,9 +1370,3 @@ def ndimlist(seq):
         return 1
     else:
         return 1 + ndimlist(seq[0])
-
-def get_wall_time(callable):
-    start_time = default_timer()
-    result = callable()
-    end_time = default_timer()
-    return end_time - start_time, result
