@@ -4,7 +4,6 @@ pytest.importorskip("numpy")
 
 import numpy as np
 import pytest
-import warnings
 from toolz import concat
 
 import dask
@@ -61,6 +60,7 @@ def test_arr_like(funcname, shape, cast_shape, dtype, cast_chunks, chunks):
 
     if "empty" not in funcname:
         assert (np_r == np.asarray(da_r)).all()
+
 
 @pytest.mark.parametrize("x, y, z", [(100, 25, 25)])
 def test_pickle_hashing_warning(x, y, z):

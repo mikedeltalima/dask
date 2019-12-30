@@ -34,6 +34,7 @@ __all__ = (
     "normalize_token",
 )
 
+
 class NormalizeTokenWarning(RuntimeWarning):
     """Warning for inefficient or slow token normalization"""
 
@@ -677,15 +678,16 @@ def tokenize(*args, **kwargs):
     return result
 
 
-
 normalize_token = Dispatch()
 normalize_token.register(
     (int, float, str, bytes, type(None), type, slice, complex, type(Ellipsis)), identity
 )
 
-normalize_token_array_pickle_warning = ("normalize_token is using pickle to"
-    " create a hash of your array data. To improve performance, disable hashing"
-    " by setting name=False.")
+normalize_token_array_pickle_warning = (
+    "normalize_token is using pickle to create a hash of your array data."
+    " To improve performance, disable hashing by setting name=False."
+)
+
 
 @normalize_token.register(dict)
 def normalize_dict(d):
@@ -895,7 +897,9 @@ def register_numpy():
             except (TypeError, UnicodeDecodeError):
                 try:
                     data = hash_buffer_hex(pickle.dumps(x, pickle.HIGHEST_PROTOCOL))
-                    warnings.warn(normalize_token_array_pickle_warning, NormalizeTokenWarning)
+                    warnings.warn(
+                        normalize_token_array_pickle_warning, NormalizeTokenWarning
+                    )
                 except Exception:
                     # pickling not supported, use UUID4-based fallback
                     data = uuid.uuid4().hex
