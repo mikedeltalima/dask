@@ -19,7 +19,7 @@ from .compatibility import is_dataclass, dataclass_fields
 from .context import thread_state
 from .core import flatten, quote, get as simple_get, literal
 from .hashing import hash_buffer_hex
-from .utils import Dispatch, ensure_dict, apply, get_wall_time
+from .utils import Dispatch, ensure_dict, apply
 from . import config, local, threaded
 
 
@@ -33,6 +33,9 @@ __all__ = (
     "tokenize",
     "normalize_token",
 )
+
+class NormalizeTokenWarning(RuntimeWarning):
+    """Warning for inefficient or slow token normalization"""
 
 
 def is_dask_collection(x):
@@ -661,18 +664,18 @@ def tokenize(*args, **kwargs):
     result = md5(str(tuple(map(normalize_token, args))).encode()).hexdigest()
     time_taken = default_timer() - start_time
     warn_config_key = "tokenize.warn_time_secs"
-    warn_time_default = 2
-    warn_time = config.get(warn_config_key, default=warn_time_default)
-    if time_taken > float(warn_time):
+    warn_time = config.get(warn_config_key, default=2)
+    if (warn_time > 0) and (time_taken > float(warn_time)):
         warnings.warn(
             "tokenize ran for {} seconds."
             " Configuration key {} controls this threshold"
-            " and was set to {} (default={}).".format(
-                time_taken, warn_config_key, warn_time, warn_time_default
+            " and was set to {}. Disable this warning by setting it to -1.".format(
+                time_taken, warn_config_key, warn_time
             ),
-            RuntimeWarning,
+            NormalizeTokenWarning,
         )
     return result
+
 
 
 normalize_token = Dispatch()
@@ -680,6 +683,9 @@ normalize_token.register(
     (int, float, str, bytes, type(None), type, slice, complex, type(Ellipsis)), identity
 )
 
+normalize_token_array_pickle_warning = ("normalize_token is using pickle to"
+    " create a hash of your array data. To improve performance, disable hashing"
+    " by setting name=False.")
 
 @normalize_token.register(dict)
 def normalize_dict(d):
@@ -889,6 +895,7 @@ def register_numpy():
             except (TypeError, UnicodeDecodeError):
                 try:
                     data = hash_buffer_hex(pickle.dumps(x, pickle.HIGHEST_PROTOCOL))
+                    warnings.warn(normalize_token_array_pickle_warning, NormalizeTokenWarning)
                 except Exception:
                     # pickling not supported, use UUID4-based fallback
                     data = uuid.uuid4().hex
